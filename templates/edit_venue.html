@@ -1,0 +1,28 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2>Edit Venue: {{ venue.name }}</h2>
+<form method="post">
+    <label for="name">Name:</label>
+    <input type="text" name="name" id="name" value="{{ venue.name }}" required>
+    <br />
+    <label for="address">Address:</label>
+    <input type="text" name="address" id="address" value="{{ venue.address }}" required>
+    <br />
+    <label for="date">Date:</label>
+    <input type="date" name="date" id="date" value="{{ venue.date.strftime('%Y-%m-%d') }}" required>
+    <br />
+    <label for="capacity">Capacity:</label>
+    <input type="number" name="capacity" id="capacity" value="{{ venue.capacity }}" required>
+    <br />
+    <label for="menu_price">Menu Price:</label>
+    <input type="number" name="menu_price" id="menu_price" value="{{ venue.menu_price }}" required>
+    <br />
+    <label for="contact">Contact:</label>
+    <input type="text" name="contact" id="contact" value="{{ venue.contact }}" required>
+    <br />
+    <button type="submit">Update Venue</button>
+    <br />
+    <a href="{{ url_for('venue') }}">Cancel</a>
+</form>
+{% endblock %}

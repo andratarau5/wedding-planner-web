@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for
 import json
 import os
+from datetime import datetime
 
 app = Flask(__name__)
 GUEST_FILE = 'guest_list.json'
+VENUES_FILE = 'venues.json'
 
 def load_guests():
     if os.path.exists(GUEST_FILE):
@@ -14,9 +16,27 @@ def load_guests():
                 return []
     return []
 
+def load_venues():
+    try:
+        with open(VENUES_FILE, 'r') as f:
+            venues = json.load(f)
+            for v in venues:
+                v['date'] = datetime.strptime(v['date'], '%Y-%m-%d')
+            return venues
+    except FileNotFoundError:
+        return []
+
+
 def save_guests(guests):
     with open(GUEST_FILE, 'w') as f:
         json.dump(guests, f, indent=4)
+
+def save_venues(venues):
+    venues_to_save = [
+        {**v, 'date': v['date'].strftime('%Y-%m-%d')} for v in venues
+    ]
+    with open(VENUES_FILE, 'w') as f:
+        json.dump(venues_to_save, f, indent=2)
 
 @app.route('/')
 def home():
@@ -28,6 +48,11 @@ def index():
     attending_count = sum(1 + guest.get('plus_ones', 0) for guest in guests if guest['rsvp'].lower() == 'yes')
     declined_count = sum(1 for guest in guests if guest['rsvp'].lower() == 'no')
     return render_template('index.html', guests=guests, attending_count=attending_count, declined_count=declined_count)
+
+@app.route('/venues')
+def venue():
+    venues = load_venues()
+    return render_template('venue.html', venues=venues)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_guest():
@@ -68,6 +93,46 @@ def delete_guest(index):
         guests.pop(index)
         save_guests(guests)
     return redirect(url_for('index'))
+
+@app.route('/venues/add', methods=['GET', 'POST'])
+def add_venue():
+    if request.method == 'POST':
+        new_venue = {
+            'name': request.form['name'],
+            'address': request.form['address'],
+            'date': datetime.strptime(request.form['date'], '%Y-%m-%d'),
+            'capacity': int(request.form['capacity']),
+            'menu_price': float(request.form['menu_price']),
+            'contact': request.form['contact']
+        }
+        venues = load_venues()
+        venues.append(new_venue)
+        save_venues(venues)
+        return redirect(url_for('venue'))
+    return render_template('add_venue.html')
+
+@app.route('/venues/edit/<int:index>', methods=['GET', 'POST'])
+def edit_venue(index):
+    venues = load_venues()
+    if request.method == 'POST':
+        venues[index] = {
+            'name': request.form['name'],
+            'address': request.form['address'],
+            'date': datetime.strptime(request.form['date'], '%Y-%m-%d'),
+            'capacity': int(request.form['capacity']),
+            'menu_price': float(request.form['menu_price']),
+            'contact': request.form['contact']
+        }
+        save_venues(venues)
+        return redirect(url_for('venue'))
+    return render_template('edit_venue.html', venue=venues[index])
+
+@app.route('/venues/delete/<int:index>')
+def delete_venue(index):
+    venues = load_venues()
+    venues.pop(index)
+    save_venues(venues)
+    return redirect(url_for('venue'))
 
 if __name__ == '__main__':
     app.run(debug=True)
