@@ -19,6 +19,10 @@ def save_guests(guests):
         json.dump(guests, f, indent=4)
 
 @app.route('/')
+def home():
+    return render_template('home.html')
+
+@app.route('/guests')
 def index():
     guests = load_guests()
     attending_count = sum(1 + guest.get('plus_ones', 0) for guest in guests if guest['rsvp'].lower() == 'yes')

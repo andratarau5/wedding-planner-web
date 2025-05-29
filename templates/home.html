@@ -1,0 +1,10 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2>Wedding Planner Dashboard</h2>
+<ul style="list-style-type: none; padding: 0;">
+    <li><a href="{{ url_for('add_guest') }}">➕ Add New Guest</a></li>
+    <li><a href="{{ url_for('index') }}">👥 View Guest List</a></li>
+    <li><a href="{{ url_for('index') }}">📊 RSVP & Plus Ones Summary</a></li>
+</ul>
+{% endblock %}
