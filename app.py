@@ -21,21 +21,41 @@ def save_guests(guests):
 @app.route('/')
 def index():
     guests = load_guests()
-    return render_template('index.html', guests=guests)
+    attending_count = sum(1 + guest.get('plus_ones', 0) for guest in guests if guest['rsvp'].lower() == 'yes')
+    declined_count = sum(1 for guest in guests if guest['rsvp'].lower() == 'no')
+    return render_template('index.html', guests=guests, attending_count=attending_count, declined_count=declined_count)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_guest():
     if request.method == 'POST':
         new_guest = {
             'name': request.form['name'],
-            'rsvp': request.form['rsvp'],
-            'dietary': request.form['dietary']
+            'rsvp': 'No Response',   # default state
+            'dietary': '',           # default empty
+            'plus_ones': 0
         }
         guests = load_guests()
         guests.append(new_guest)
         save_guests(guests)
         return redirect(url_for('index'))
     return render_template('add_guest.html')
+
+@app.route('/edit/<int:index>', methods=['GET', 'POST'])
+def edit_guest(index):
+    guests = load_guests()
+    if index < 0 or index >= len(guests):
+        return "Guest not found", 404
+
+    guest = guests[index]
+
+    if request.method == 'POST':
+        guest['rsvp'] = request.form['rsvp']
+        guest['dietary'] = request.form['dietary']
+        guest['plus_ones'] = int(request.form['plus_ones'])
+        save_guests(guests)
+        return redirect(url_for('index'))
+
+    return render_template('edit_guest.html', guest=guest, index=index)
 
 @app.route('/delete/<int:index>')
 def delete_guest(index):

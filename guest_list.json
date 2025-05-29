@@ -1,1 +1,14 @@
-[]
+[
+    {
+        "name": "Test",
+        "rsvp": "Yes",
+        "dietary": "veg",
+        "plus_ones": 1
+    },
+    {
+        "name": "Test2",
+        "rsvp": "No Response",
+        "dietary": "",
+        "plus_ones": 0
+    }
+]
