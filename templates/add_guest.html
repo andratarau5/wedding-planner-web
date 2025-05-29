@@ -1,0 +1,14 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2>Add Guest</h2>
+<form method="post">
+    <label>Name:</label><br>
+    <input type="text" name="name" required><br>
+    <label>RSVP (yes/no):</label><br>
+    <input type="text" name="rsvp" required><br>
+    <label>Dietary Restrictions:</label><br>
+    <input type="text" name="dietary"><br><br>
+    <button type="submit">Add Guest</button>
+</form>
+{% endblock %}

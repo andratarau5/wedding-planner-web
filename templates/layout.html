@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wedding Planner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>💍 Wedding Planner</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Guest List</a> |
+            <a href="{{ url_for('add_guest') }}">Add Guest</a>
+        </nav>
+        <hr>
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

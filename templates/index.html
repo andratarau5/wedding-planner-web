@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2>Guest List</h2>
+{% if guests %}
+<table>
+    <tr>
+        <th>Name</th>
+        <th>RSVP</th>
+        <th>Menu</th>
+        <th>Actions</th>
+    </tr>
+    {% for guest in guests %}
+    <tr>
+        <td>{{ guest.name }}</td>
+        <td>{{ guest.rsvp }}</td>
+        <td>{{ guest.dietary }}</td>
+        <td><a href="{{ url_for('delete_guest', index=loop.index0) }}">Delete</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No guests yet. <a href="{{ url_for('add_guest') }}">Add one</a>.</p>
+{% endif %}
+{% endblock %}
