@@ -6,6 +6,7 @@ from datetime import datetime
 app = Flask(__name__)
 GUEST_FILE = 'guest_list.json'
 VENUES_FILE = 'venues.json'
+EXPENSES_FILE = 'expenses.json'
 
 def load_guests():
     if os.path.exists(GUEST_FILE):
@@ -26,6 +27,14 @@ def load_venues():
     except FileNotFoundError:
         return []
 
+def load_expenses():
+    if os.path.exists(EXPENSES_FILE):
+        with open(EXPENSES_FILE, 'r') as f:
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return []
+    return []
 
 def save_guests(guests):
     with open(GUEST_FILE, 'w') as f:
@@ -37,6 +46,10 @@ def save_venues(venues):
     ]
     with open(VENUES_FILE, 'w') as f:
         json.dump(venues_to_save, f, indent=2)
+
+def save_expenses(expenses):
+    with open(EXPENSES_FILE, 'w') as f:
+        json.dump(expenses, f, indent=4)
 
 @app.route('/')
 def home():
@@ -53,6 +66,11 @@ def index():
 def venue():
     venues = load_venues()
     return render_template('venue.html', venues=venues)
+
+@app.route('/expenses')
+def expenses():
+    expenses = load_expenses()
+    return render_template('expenses.html', expenses=expenses)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_guest():
@@ -133,6 +151,41 @@ def delete_venue(index):
     venues.pop(index)
     save_venues(venues)
     return redirect(url_for('venue'))
+
+@app.route('/expenses/add', methods=['GET', 'POST'])
+def add_expense():
+    if request.method == 'POST':
+        new_expense = {
+            'name': request.form['name'],
+            'price': float(request.form['price']),
+            'description': request.form['description']
+        }
+        expenses = load_expenses()
+        expenses.append(new_expense)
+        save_expenses(expenses)
+        return redirect(url_for('expenses'))
+    return render_template('add_expense.html')
+
+@app.route('/expenses/edit/<int:index>', methods=['GET', 'POST'])
+def edit_expense(index):
+    expenses = load_expenses()
+    if request.method == 'POST':
+        expenses[index] = {
+            'name': request.form['name'],
+            'price': float(request.form['price']),
+            'description': request.form['description']
+        }
+        save_expenses(expenses)
+        return redirect(url_for('expenses'))
+    return render_template('edit_expense.html', expense=expenses[index])
+
+@app.route('/expenses/delete/<int:index>')
+def delete_expense(index):
+    expenses = load_expenses()
+    if 0 <= index < len(expenses):
+        expenses.pop(index)
+        save_expenses(expenses)
+    return redirect(url_for('expenses'))
 
 if __name__ == '__main__':
     app.run(debug=True)
