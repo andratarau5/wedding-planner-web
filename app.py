@@ -7,6 +7,8 @@ app = Flask(__name__)
 GUEST_FILE = 'guest_list.json'
 VENUES_FILE = 'venues.json'
 EXPENSES_FILE = 'expenses.json'
+WEDDING_DATE = 'wedding_date.json'
+
 
 def load_guests():
     if os.path.exists(GUEST_FILE):
@@ -51,9 +53,14 @@ def save_expenses(expenses):
     with open(EXPENSES_FILE, 'w') as f:
         json.dump(expenses, f, indent=4)
 
-@app.route('/')
+@app.route('/') 
 def home():
-    return render_template('home.html')
+    wedding_date_dict = load_wedding_date()
+    wedding_date_str = wedding_date_dict.get('wedding_date')
+    wedding_date_obj = None
+    if wedding_date_str:
+        wedding_date_obj = datetime.strptime(wedding_date_str, '%Y-%m-%d')
+    return render_template('home.html', wedding_date=wedding_date_obj)
 
 @app.route('/guests')
 def index():
@@ -186,6 +193,66 @@ def delete_expense(index):
         expenses.pop(index)
         save_expenses(expenses)
     return redirect(url_for('expenses'))
+
+@app.route('/search')
+def search_guest():
+    query = request.args.get('q', '').strip().lower()
+    guests = load_guests()
+
+    if query:
+        filtered_guests = [
+            guest for guest in guests
+            if query in guest['name'].lower()
+        ]
+    else:
+        filtered_guests = []
+
+    return render_template('search_results.html', guests=filtered_guests, query=query)
+
+@app.route('/budget')
+def budget_overview():
+    venues = load_venues()
+    expenses = load_expenses()
+
+    venue_total = sum(float(v.get('menu_price', 0)) for v in venues if v.get('menu_price'))
+    other_total = sum(float(e.get('amount', 0)) for e in expenses)
+
+    grand_total = venue_total + other_total
+
+    return render_template('budget.html',
+                           venues=venues,
+                           expenses=expenses,
+                           venue_total=venue_total,
+                           other_total=other_total,
+                           grand_total=grand_total)
+
+
+def load_wedding_date():
+    if os.path.exists(WEDDING_DATE):
+        with open(WEDDING_DATE, 'r') as f:
+            return json.load(f)
+    return {}
+
+
+def save_wedding_date(wedding_date):
+    with open(WEDDING_DATE, 'w') as f:
+        json.dump(wedding_date, f)
+
+
+@app.route('/edit_date', methods=['GET', 'POST'])
+def edit_date():
+    wedding_date_dict = load_wedding_date()
+    current_date = wedding_date_dict.get('wedding_date', '')  # string or empty
+
+    if request.method == 'POST':
+        new_date = request.form.get('wedding_date')  # expects "YYYY-MM-DD"
+        if new_date:
+            wedding_date_dict['wedding_date'] = new_date
+            save_wedding_date(wedding_date_dict)
+        return redirect(url_for('home'))  # redirect to home or wherever you want
+
+    return render_template('edit_date.html', wedding_date=current_date)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

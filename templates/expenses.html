@@ -13,8 +13,8 @@
     </tr>
     {% for expense in expenses %}
     <tr>
-        <td>{{ expense.item }}</td>
-        <td>${{ expense.cost }}</td>
+        <td>{{ expense.name }}</td>
+        <td>${{ expense.price }}</td>
         <td>{{ expense.description }}</td>
         <td>
             <a href="{{ url_for('edit_expense', index=loop.index0) }}">Edit</a> |

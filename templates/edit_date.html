@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2>Edit Wedding Date</h2>
+
+<form method="POST">
+    <label for="wedding_date">Wedding Date:</label>
+    <input type="date" id="wedding_date" name="wedding_date" value="{{ wedding_date }}">
+    <button type="submit">Save</button>
+</form>
+
+<a href="{{ url_for('home') }}">Cancel</a>
+{% endblock %}

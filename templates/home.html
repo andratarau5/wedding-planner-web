@@ -1,11 +1,17 @@
 {% extends 'layout.html' %}
 
 {% block content %}
+<h2>⏳ Countdown to the Wedding</h2>
+<p><strong>{{ days_left }}</strong> days left until the big day! 💍</p>
+<!-- Wedding Date shown here -->
+<p><em>Wedding Date: {{ wedding_date.strftime('%B %d, %Y') }}</em></p>
 <h2>Wedding Planner Dashboard</h2>
 <ul style="list-style-type: none; padding: 0;">
     <li><a href="{{ url_for('add_guest') }}">➕ Add New Guest</a></li>
     <li><a href="{{ url_for('index') }}">👥 View Guest List</a></li>
     <li><a href="{{ url_for('venue') }}">🏛️ Venue Details</a></li>
     <li><a href="{{ url_for('expenses') }}">💰Other Services</a></li>
+    <li><a href="{{ url_for('budget_overview') }}">💰 Budget Overview</a></li>
+    <li><a href="{{ url_for('edit_date') }}">Edit Wedding Date</a></li>
 </ul>
 {% endblock %}

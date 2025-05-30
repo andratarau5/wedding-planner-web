@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "name": " test",
+    "address": "test",
+    "date": "2025-06-07",
+    "capacity": 300,
+    "menu_price": 70.0,
+    "contact": "test"
+  }
+]

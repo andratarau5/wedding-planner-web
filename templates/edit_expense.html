@@ -3,18 +3,15 @@
 {% block content %}
 <h2>Edit Expense: {{ expense.item }}</h2>
 <form method="post">
-    <label for="item">Item:</label>
-    <input type="text" name="item" id="item" value="{{ expense.item }}" required>
+    <label for="name">Item:</label>
+    <input type="text" name="name" id="name" value="{{ expense.name }}" required>
     <br />
-    
-    <label for="cost">Cost:</label>
-    <input type="number" name="cost" id="cost" value="{{ expense.cost }}" required>
+    <label for="price">Cost:</label>
+    <input type="number" name="price" id="price" value="{{ expense.price }}" required>
     <br />
-    
     <label for="description">Description:</label>
     <textarea name="description" id="description" required>{{ expense.description }}</textarea>
     <br />
-    
     <button type="submit">Update Expense</button>
     <a href="{{ url_for('expenses') }}">Cancel</a>
 </form>

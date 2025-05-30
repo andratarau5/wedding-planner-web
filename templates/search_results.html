@@ -1,21 +1,14 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<h2>Guest List</h2>
-<p>
-  {{ attending_count }} guest{{ 's' if attending_count != 1 else '' }} attending, 
-  {{ declined_count }} declined
-</p>
-<form method="get" action="{{ url_for('search_guest') }}">
-    <input type="text" name="q" placeholder="Search guest by name" required>
-    <button type="submit">Search</button>
-</form>
+<h2>Search Results for "{{ query }}"</h2>
+
 {% if guests %}
 <table>
     <tr>
         <th>Name</th>
         <th>RSVP</th>
-        <th>Dietary</th>
+        <th>Menu</th>
         <th>Plus Ones</th>
         <th>Actions</th>
     </tr>
@@ -33,7 +26,8 @@
     {% endfor %}
 </table>
 {% else %}
-<p>No guests yet. <a href="{{ url_for('add_guest') }}">Add one</a>.</p>
+<p>No guests found matching your search.</p>
 {% endif %}
-<a href="{{ url_for('add_guest') }}">Add Guest</a>
+
+<a href="{{ url_for('index') }}">Back to Guest List</a>
 {% endblock %}
