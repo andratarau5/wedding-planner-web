@@ -10,13 +10,10 @@
         <option value="No" {% if guest.rsvp == 'No' %}selected{% endif %}>No</option>
         <option value="No response" {% if guest.rsvp == 'No response' %}selected{% endif %}>No response</option>
     </select><br><br>
-
     <label for="dietary">Dietary Restrictions:</label>
     <input type="text" name="dietary" value="{{ guest.dietary }}"><br><br>
-
     <label for="plus_ones">Plus Ones:</label>
     <input type="number" name="plus_ones" value="{{ guest.plus_ones }}"><br><br>
-
     <button type="submit">Save</button>
 </form>
 <a href="{{ url_for('index') }}">Cancel</a>

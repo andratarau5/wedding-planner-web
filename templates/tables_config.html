@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2>🪑 Configure Tables</h2>
+<form method="post">
+    <label for="num_tables">Number of tables:</label>
+    <input type="number" name="num_tables" id="num_tables" value="{{ config.num_tables }}" required>
+
+    <label for="seats_per_table">Seats per table:</label>
+    <input type="number" name="seats_per_table" id="seats_per_table" value="{{ config.seats_per_table }}" required>
+
+    <button type="submit">Save</button>
+</form>
+
+<a href="{{ url_for('home') }}">⬅️ Back to Home</a>
+{% endblock %}

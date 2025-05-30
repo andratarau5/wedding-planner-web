@@ -1,0 +1,40 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2>📝 Wedding Planning Tasks</h2>
+
+<!-- Progress Bar -->
+{% if total > 0 %}
+    <p>{{ completed }} of {{ total }} tasks completed ({{ percent }}%)</p>
+    <div style="background: #ddd; height: 20px; border-radius: 10px; overflow: hidden; margin-bottom: 20px;">
+        <div style="background: #4caf50; width: {{ percent }}%; height: 100%;"></div>
+    </div>
+{% else %}
+    <p>No tasks added yet.</p>
+{% endif %}
+
+<!-- Task Form -->
+<form method="post">
+    <input type="text" name="title" placeholder="New task..." required>
+    <button type="submit">➕ Add Task</button>
+</form>
+
+<!-- Task List -->
+<ul style="list-style: none; padding: 0;">
+    {% for task in tasks %}
+    <li style="margin: 10px 0;">
+        <form action="{{ url_for('toggle_task', index=loop.index0) }}" method="post" style="display:inline;">
+            <button type="submit">{{ '✅' if task.completed else '⬜️' }}</button>
+        </form>
+        <span style="{% if task.completed %}text-decoration: line-through; color: gray;{% endif %}">
+            {{ task.title }}
+        </span>
+        <form action="{{ url_for('delete_task', index=loop.index0) }}" method="post" style="display:inline;">
+            <button type="submit">🗑️</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+
+<a href="{{ url_for('home') }}">⬅️ Back to Home</a>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2>👥 Guest Table Assignments</h2>
+
+{% if tables %}
+  {% for table_num, guests in tables.items() %}
+    <h3>Table {{ table_num }}</h3>
+    {% if guests %}
+      <ul>
+        {% for guest in guests %}
+          <li>{{ guest }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p><em>No guests assigned to this table.</em></p>
+    {% endif %}
+  {% endfor %}
+{% else %}
+  <p>No tables configured.</p>
+{% endif %}
+
+<a href="{{ url_for('assign_tables') }}">✏️ Edit Table Assignments</a>
+{% endblock %}

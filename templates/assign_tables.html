@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2>Assign Guests to Tables</h2>
+<form method="post">
+  <table>
+    <tr>
+      <th>Guest Name</th>
+      <th>Table Assignment</th>
+    </tr>
+    {% for guest in guests %}
+    <tr>
+      <td>{{ guest.name }}</td>
+      <td>
+        <select name="table_{{ loop.index0 }}">
+          <option value="">-- None --</option>
+          {% for t in range(1, num_tables + 1) %}
+          <option value="{{ t }}" {% if guest.table == t %}selected{% endif %}>Table {{ t }}</option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  <button type="submit">Save Assignments</button>
+</form>
+
+<a href="{{ url_for('tables_view') }}">⬅️ Back to Table View</a>
+{% endblock %}

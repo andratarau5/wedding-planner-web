@@ -8,6 +8,8 @@ GUEST_FILE = 'guest_list.json'
 VENUES_FILE = 'venues.json'
 EXPENSES_FILE = 'expenses.json'
 WEDDING_DATE = 'wedding_date.json'
+TASKS_FILE = 'tasks.json'
+TABLES_CONFIG_FILE = 'tables_config.json'
 
 
 def load_guests():
@@ -252,6 +254,108 @@ def edit_date():
         return redirect(url_for('home'))  # redirect to home or wherever you want
 
     return render_template('edit_date.html', wedding_date=current_date)
+
+def load_tasks():
+    if os.path.exists(TASKS_FILE):
+        with open(TASKS_FILE, 'r') as f:
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return []
+    return []
+
+def save_tasks(tasks):
+    with open(TASKS_FILE, 'w') as f:
+        json.dump(tasks, f)
+
+@app.route('/tasks', methods=['GET', 'POST'])
+def tasks():
+    tasks = load_tasks()
+    if request.method == 'POST':
+        new_task = request.form['title']
+        tasks.append({'title': new_task, 'completed': False})
+        save_tasks(tasks)
+        return redirect(url_for('tasks'))
+
+    total = len(tasks)
+    completed = sum(1 for t in tasks if t['completed'])
+    percent = int((completed / total) * 100) if total > 0 else 0
+
+    return render_template('tasks.html', tasks=tasks, total=total, completed=completed, percent=percent)
+
+
+@app.route('/tasks/toggle/<int:index>', methods=['POST'])
+def toggle_task(index):
+    tasks = load_tasks()
+    if 0 <= index < len(tasks):
+        tasks[index]['completed'] = not tasks[index]['completed']
+        save_tasks(tasks)
+    return redirect(url_for('tasks'))
+
+@app.route('/tasks/delete/<int:index>', methods=['POST'])
+def delete_task(index):
+    tasks = load_tasks()
+    if 0 <= index < len(tasks):
+        tasks.pop(index)
+        save_tasks(tasks)
+    return redirect(url_for('tasks'))
+
+def load_table_config():
+    if os.path.exists(TABLES_CONFIG_FILE):
+        with open(TABLES_CONFIG_FILE) as f:
+            return json.load(f)
+    return {"num_tables": 0, "seats_per_table": 0}
+
+def save_table_config(config):
+    with open(TABLES_CONFIG_FILE, 'w') as f:
+        json.dump(config, f)
+
+@app.route('/configure_tables', methods=['GET', 'POST'])
+def configure_tables():
+    config = load_table_config()
+    if request.method == 'POST':
+        config['num_tables'] = int(request.form['num_tables'])
+        config['seats_per_table'] = int(request.form['seats_per_table'])
+        save_table_config(config)
+        return redirect(url_for('tables_view'))
+    return render_template('tables_config.html', config=config)
+
+@app.route('/tables_view')
+def tables_view():
+    config = load_table_config()
+    guests = load_guests()
+    num_tables = config.get("num_tables", 0)
+
+    # Prepare tables as dict {table_num: [guest_names]}
+    tables = {i: [] for i in range(1, num_tables + 1)}
+
+    for guest in guests:
+        table_num = guest.get('table')
+        if table_num and table_num in tables:
+            tables[table_num].append(guest['name'])
+
+    return render_template('tables_view.html', tables=tables)
+
+
+@app.route('/assign_tables', methods=['GET', 'POST'])
+def assign_tables():
+    guests = load_guests()
+    config = load_table_config()
+    num_tables = config.get('num_tables', 0)
+
+    if request.method == 'POST':
+        # Loop through guests and update table assignment from form data
+        for i, guest in enumerate(guests):
+            table_num_str = request.form.get(f'table_{i}', '')
+            if table_num_str.isdigit():
+                guest['table'] = int(table_num_str)
+            else:
+                guest['table'] = None  # Or 0 or null for no assignment
+
+        save_guests(guests)
+        return redirect(url_for('tables_view'))
+
+    return render_template('assign_tables.html', guests=guests, num_tables=num_tables)
 
 
 if __name__ == '__main__':
