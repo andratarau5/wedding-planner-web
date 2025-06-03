@@ -12,11 +12,11 @@
     {% for v in venues %}
     <tr>
         <td>{{ v.name }}</td>
-        <td>${{ v.menu_price }}</td>
+        <td>€{{ v.menu_price }}</td>
     </tr>
     {% endfor %}
 </table>
-<p><strong>Total Venue Cost:</strong> ${{ venue_total }}</p>
+<p><strong>Total Venue Cost:</strong> €{{ venue_total }}</p>
 
 <h3>📦 Other Expenses</h3>
 <table>
@@ -27,15 +27,15 @@
     {% for e in expenses %}
     <tr>
         <td>{{ e.name }}</td>
-        <td>${{ e.price }}</td>
+        <td>€{{ e.price }}</td>
     </tr>
     {% endfor %}
 </table>
-<p><strong>Total Other Expenses:</strong> ${{ other_total }}</p>
+<p><strong>Total Other Expenses:</strong> €{{ other_total }}</p>
 
 
 <hr>
-<h2>💸 Grand Total: ${{ grand_total }}</h2>
+<h2>💸 Grand Total: €{{ grand_total }}</h2>
 
 <a href="{{ url_for('home') }}">⬅️ Back to Home</a>
 {% endblock %}

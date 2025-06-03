@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2>📩 Send Custom SMS to Guests</h2>
+
+<form method="post">
+  <label>Message:</label><br>
+  <textarea name="message" rows="4" cols="50" required></textarea><br><br>
+
+  <h3>Select guests to send SMS to:</h3>
+  {% for guest in guests %}
+    {% if guest.phone %}
+      <input type="checkbox" name="guest_indices" value="{{ loop.index0 }}">
+      {{ guest.name }} ({{ guest.phone }})<br>
+    {% else %}
+      <input type="checkbox" disabled>
+      {{ guest.name }} (No phone number)<br>
+    {% endif %}
+  {% endfor %}
+
+  <br>
+  <button type="submit">Send SMS</button>
+</form>
+
+<a href="{{ url_for('index') }}">← Back to Guest List</a>
+{% endblock %}

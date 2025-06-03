@@ -20,5 +20,6 @@
   <p>No tables configured.</p>
 {% endif %}
 
-<a href="{{ url_for('assign_tables') }}">✏️ Edit Table Assignments</a>
+<li><a href="{{ url_for('assign_tables') }}">✏️ Edit Table Assignments</a></li>
+<li><a href="{{ url_for('export_tables_pdf') }}" target="_blank">📄 Export PDF</a></li>
 {% endblock %}

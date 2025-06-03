@@ -3,14 +3,19 @@
         "name": "Test",
         "rsvp": "Yes",
         "dietary": "veg",
-        "plus_ones": 1,
-        "table": 5
+        "plus_ones": 3,
+        "table": 5,
+        "gift_amount": 50.0,
+        "hotel": true,
+        "kids": 2,
+        "phone": "+40771614730"
     },
     {
         "name": "Test2",
         "rsvp": "No Response",
         "dietary": "",
         "plus_ones": 0,
-        "table": null
+        "table": null,
+        "gift_amount": 100.0
     }
 ]

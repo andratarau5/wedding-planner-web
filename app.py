@@ -1,16 +1,22 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, make_response, flash
+from weasyprint import HTML
 import json
 import os
 from datetime import datetime
+from twilio.rest import Client
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 GUEST_FILE = 'guest_list.json'
 VENUES_FILE = 'venues.json'
 EXPENSES_FILE = 'expenses.json'
 WEDDING_DATE = 'wedding_date.json'
 TASKS_FILE = 'tasks.json'
 TABLES_CONFIG_FILE = 'tables_config.json'
-
+TWILIO_ACCOUNT_SID = 'AC71b8f58aa5a2f491ec0c9a818d76635d'
+TWILIO_AUTH_TOKEN = '12c427f8434905b2d96d8cc3c7c6e38b'
+TWILIO_PHONE_NUMBER = '+40731003222'
+client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 def load_guests():
     if os.path.exists(GUEST_FILE):
@@ -69,7 +75,16 @@ def index():
     guests = load_guests()
     attending_count = sum(1 + guest.get('plus_ones', 0) for guest in guests if guest['rsvp'].lower() == 'yes')
     declined_count = sum(1 for guest in guests if guest['rsvp'].lower() == 'no')
-    return render_template('index.html', guests=guests, attending_count=attending_count, declined_count=declined_count)
+    total_kids = sum(guest.get('kids', 0) for guest in guests)
+    total_adults = len(guests) + sum(guest.get('plus_ones', 0) for guest in guests)
+    grand_total = total_adults + total_kids
+    return render_template('index.html', 
+                           guests=guests, 
+                           attending_count=attending_count, 
+                           declined_count=declined_count,
+                           total_kids=total_kids,
+                           total_adults=total_adults,
+                           grand_total=grand_total)
 
 @app.route('/venues')
 def venue():
@@ -108,10 +123,14 @@ def edit_guest(index):
         guest['rsvp'] = request.form['rsvp']
         guest['dietary'] = request.form['dietary']
         guest['plus_ones'] = int(request.form['plus_ones'])
+        guest['hotel'] = request.form.get('hotel') == 'yes'
+        guest['kids'] = int(request.form.get('kids', 0))
+        guest['phone'] = request.form.get('phone', '')
         save_guests(guests)
         return redirect(url_for('index'))
 
     return render_template('edit_guest.html', guest=guest, index=index)
+
 
 @app.route('/delete/<int:index>')
 def delete_guest(index):
@@ -217,7 +236,7 @@ def budget_overview():
     expenses = load_expenses()
 
     venue_total = sum(float(v.get('menu_price', 0)) for v in venues if v.get('menu_price'))
-    other_total = sum(float(e.get('amount', 0)) for e in expenses)
+    other_total = sum(float(e.get('price', 0)) for e in expenses)
 
     grand_total = venue_total + other_total
 
@@ -356,6 +375,135 @@ def assign_tables():
         return redirect(url_for('tables_view'))
 
     return render_template('assign_tables.html', guests=guests, num_tables=num_tables)
+
+@app.route('/export_tables_pdf')
+def export_tables_pdf():
+    config = load_table_config()
+    guests = load_guests()
+
+    num_tables = config.get("num_tables", 0)
+    seats_per_table = config.get("seats_per_table", 0)
+    tables = [[] for _ in range(num_tables)]
+    guest_index = 0
+
+    for guest in guests:
+        table_number = guest_index // seats_per_table
+        if table_number < num_tables:
+            tables[table_number].append(guest['name'])
+            guest_index += 1
+        else:
+            break
+
+    rendered = render_template('tables_view_pdf.html', tables=tables, config=config)
+    pdf = HTML(string=rendered).write_pdf()
+
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'inline; filename=tables.pdf'
+    return response
+
+@app.route('/edit_gifts', methods=['GET', 'POST'])
+def edit_gifts():
+    guests = load_guests()
+    if request.method == 'POST':
+        for i, guest in enumerate(guests):
+            amount = request.form.get(f'gift_{i}')
+            try:
+                guest['gift_amount'] = float(amount) if amount else 0
+            except ValueError:
+                guest['gift_amount'] = 0
+        save_guests(guests)
+        return redirect(url_for('edit_gifts'))
+    
+    total_gifts = sum(g.get('gift_amount', 0) for g in guests)
+    return render_template('edit_gifts.html', guests=guests, total_gifts=total_gifts)
+
+@app.route('/budget_resolution')
+def budget_resolution():
+    guests = load_guests()
+    venues = load_venues()
+    expenses = load_expenses()
+
+    # Gifts received from guests
+    total_gifts = sum(g.get('gift_amount', 0) for g in guests)
+
+    # Venue and other expenses
+    venue_total = sum(float(v.get('menu_price', 0)) for v in venues if v.get('menu_price'))
+    other_total = sum(float(e.get('price', 0)) for e in expenses)
+    total_spent = venue_total + other_total
+
+    remaining_balance = total_gifts - total_spent
+
+    return render_template(
+        'budget_resolution.html',
+        total_gifts=total_gifts,
+        venue_total=venue_total,
+        other_total=other_total,
+        total_spent=total_spent,
+        remaining_balance=remaining_balance
+    )
+
+@app.route('/send_sms/<int:index>', methods=['GET', 'POST'])
+def send_sms(index):
+    guests = load_guests()
+    if index < 0 or index >= len(guests):
+        return "Guest not found", 404
+    guest = guests[index]
+    if request.method == 'POST':
+        message_body = request.form['message']
+        to_number = guest.get('phone')
+        if not to_number:
+            flash('Guest has no phone number')
+            return redirect(url_for('index'))
+        try:
+            message = client.messages.create(
+                body=message_body,
+                from_=TWILIO_PHONE_NUMBER,
+                to=to_number
+            )
+            flash(f'SMS sent to {guest["name"]}!')
+        except Exception as e:
+            flash(f'Error sending SMS: {e}')
+        return redirect(url_for('index'))
+    return render_template('send_sms.html', guest=guest)
+
+@app.route('/send_bulk_sms', methods=['GET', 'POST'])
+def send_bulk_sms():
+    guests = load_guests()
+
+    if request.method == 'POST':
+        message = request.form['message']
+        indices = request.form.getlist('guest_indices')
+
+        if not indices:
+            flash("Please select at least one guest.")
+            return redirect(url_for('send_bulk_sms'))
+
+        account_sid = 'your_account_sid'
+        auth_token = 'your_auth_token'
+        twilio_number = 'your_twilio_phone_number'
+        client = Client(account_sid, auth_token)
+
+        sent_count = 0
+
+        for idx in indices:
+            guest = guests[int(idx)]
+            phone = guest.get('phone')
+            if phone:
+                try:
+                    client.messages.create(
+                        body=message,
+                        from_=twilio_number,
+                        to=phone
+                    )
+                    sent_count += 1
+                except Exception as e:
+                    flash(f"Error sending to {guest['name']}: {str(e)}")
+
+        flash(f"Successfully sent SMS to {sent_count} guest(s).")
+        return redirect(url_for('index'))
+
+    return render_template('send_bulk_sms.html', guests=guests)
 
 
 if __name__ == '__main__':

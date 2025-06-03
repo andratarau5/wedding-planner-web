@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Guest Table Assignments</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        h2 { color: #333; }
+        .table-box {
+            margin-bottom: 2em;
+            border: 1px solid #ccc;
+            padding: 1em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Guest Table Assignments</h1>
+    {% for table in tables %}
+    <div class="table-box">
+        <h2>Table {{ loop.index }}</h2>
+        <ul>
+            {% for guest in table %}
+            <li>{{ guest }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+</body>
+</html>
