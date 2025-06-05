@@ -12,10 +12,13 @@
     },
     {
         "name": "Test2",
-        "rsvp": "No Response",
+        "rsvp": "Yes",
         "dietary": "",
         "plus_ones": 0,
         "table": null,
-        "gift_amount": 100.0
+        "gift_amount": 100.0,
+        "hotel": true,
+        "kids": 0,
+        "phone": "+40731003222"
     }
 ]
