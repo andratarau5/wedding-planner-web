@@ -26,6 +26,16 @@ body {
     margin-bottom: 30px;
 }
 
+.task-done {
+    text-decoration: line-through;
+    color: gray;
+}
+
+.progress-bar {
+    background: #4caf50;
+    height: 100%;
+}
+
 h1 {
     color: #f5f9e5;
     margin-bottom: 20px;
