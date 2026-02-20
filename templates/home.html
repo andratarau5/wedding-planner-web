@@ -1,21 +1,25 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<h2>Wedding Countdown ⏳</h2>
-<p><strong>{{ days_left }}</strong> days left until the big day! 💍</p>
-<!-- Wedding Date shown here -->
-<p>Wedding Date:<strong>{{ wedding_date.strftime('%d %B %Y') }}</strong></p>
-<h2>Wedding Planner Dashboard</h2>
-<ul style="list-style-type: none; padding: 0;">
-    <li><a href="{{ url_for('add_guest') }}">➕ Add New Guest</a></li>
-    <li><a href="{{ url_for('index') }}">👥 View Guest List</a></li>
-    <li><a href="{{ url_for('venue') }}">🏛️ Venue Details</a></li>
-    <li><a href="{{ url_for('expenses') }}">💰Other Services</a></li>
-    <li><a href="{{ url_for('budget_overview') }}">💰 Budget Overview</a></li>
-    <li><a href="{{ url_for('tasks') }}">📝 Task Manager</a></li>
-    <li><a href="{{ url_for('configure_tables') }}">🪑 Configure Guest Tables</a></li>
-    <li><a href="{{ url_for('tables_view') }}">👥 View Table Assignments</a></li>
-    <li><a href="{{ url_for('edit_gifts') }}">🎁 Guest Gift Tracker</a></li>
-    <li><a href="{{ url_for('budget_resolution') }}">📊 Budget Resolution</a></li>
-</ul>
+<div class="content-box">
+    <h2>Wedding Countdown ⏳</h2>
+    <p><strong>{{ days_left }}</strong> days left until the big day! 💍</p>
+    <!-- Wedding Date shown here -->
+    <p>Wedding Date:<strong>{{ wedding_date.strftime('%d %B %Y') }}</strong></p>
+</div>
+<div class="content-box">
+    <h2>Wedding Planner Dashboard</h2>
+    <ul style="list-style-type: none; padding: 0;">
+        <li><a href="{{ url_for('add_guest') }}">➕ Add New Guest</a></li>
+        <li><a href="{{ url_for('index') }}">👥 View Guest List</a></li>
+        <li><a href="{{ url_for('venue') }}">🏛️ Venue Details</a></li>
+        <li><a href="{{ url_for('expenses') }}">💰Other Services</a></li>
+        <li><a href="{{ url_for('budget_overview') }}">💰 Budget Overview</a></li>
+        <li><a href="{{ url_for('tasks') }}">📝 Task Manager</a></li>
+        <li><a href="{{ url_for('configure_tables') }}">🪑 Configure Guest Tables</a></li>
+        <li><a href="{{ url_for('tables_view') }}">👥 View Table Assignments</a></li>
+        <li><a href="{{ url_for('edit_gifts') }}">🎁 Guest Gift Tracker</a></li>
+        <li><a href="{{ url_for('budget_resolution') }}">📊 Budget Resolution</a></li>
+    </ul>
+</div>
 {% endblock %}

@@ -1,19 +1,21 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<h2>Edit Expense: {{ expense.item }}</h2>
-<form method="post">
-    <label for="name">Item:</label>
-    <input type="text" name="name" id="name" value="{{ expense.name }}" required>
-    <br />
-    <label for="price">Cost:</label>
-    <input type="number" name="price" id="price" value="{{ expense.price }}" required>
-    <br />
-    <label for="description">Description:</label>
-    <textarea name="description" id="description" required>{{ expense.description }}</textarea>
-    <br />
-    <button type="submit">Update Expense</button>
-    <a href="{{ url_for('expenses') }}">Cancel</a>
-</form>
+<div class="content-box">
+    <h2>Edit Expense: {{ expense.item }}</h2>
+    <form method="post">
+        <label for="name">Item:</label>
+        <input type="text" name="name" id="name" value="{{ expense.name }}" required>
+        <br />
+        <label for="price">Cost:</label>
+        <input type="number" name="price" id="price" value="{{ expense.price }}" required>
+        <br />
+        <label for="description">Description:</label>
+        <textarea name="description" id="description" required>{{ expense.description }}</textarea>
+        <br />
+        <button type="submit">Update Expense</button>
+        <a href="{{ url_for('expenses') }}">Cancel</a>
+    </form>
+</div>
 {% endblock %}
 <!-- This template allows users to edit an existing expense. It pre-fills the form fields with the current values of the expense being edited. -->

@@ -2,17 +2,19 @@
 
 {% block content %}
 <h2>Add Expense</h2>
-<form method="post">
-    <label for="name">Item:</label>
-    <input type="text" name="name" id="name" required>
-    <br />
-    <label for="price">Cost:</label>
-    <input type="number" name="price" id="price" required>
-    <br />
-    <label for="description">Description:</label>
-    <textarea name="description" id="description" required></textarea>
-    <br />
-    <button type="submit">Add Expense</button>
-    <a href="{{ url_for('expenses') }}">Cancel</a>
-</form>
+<div class="content-box">
+    <form method="post">
+        <label for="name">Item:</label>
+        <input type="text" name="name" id="name" required>
+        <br />
+        <label for="price">Cost:</label>
+        <input type="number" name="price" id="price" required>
+        <br />
+        <label for="description">Description:</label>
+        <textarea name="description" id="description" required></textarea>
+        <br />
+        <button type="submit">Add Expense</button>
+        <a href="{{ url_for('expenses') }}">Cancel</a>
+    </form>
+</div>
 {% endblock %}

@@ -1,6 +1,7 @@
 {% extends 'layout.html' %}
 
 {% block content %}
+<div class="content-box">
 <h2>👥 Guest Table Assignments</h2>
 
 {% if tables %}
@@ -22,4 +23,5 @@
 
 <li><a href="{{ url_for('assign_tables') }}">✏️ Edit Table Assignments</a></li>
 <li><a href="{{ url_for('export_tables_pdf') }}" target="_blank">📄 Export PDF</a></li>
+</div>
 {% endblock %}

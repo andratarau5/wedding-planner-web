@@ -1,61 +1,64 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<h3>📊 Guest Summary</h3>
-<table>
-  <tr>
-    <td>Total Adults</td>
-    <td>{{ total_adults }}</td>
-  </tr>
-  <tr>
-    <td>Total Kids</td>
-    <td>{{ total_kids }}</td>
-  </tr>
-  <tr>
-    <td><strong>Total Guests</strong></td>
-    <td><strong>{{ grand_total }}</strong></td>
-  </tr>
-</table>
-<h2>Guest List</h2>
-<p>
-  {{ attending_count }} guest{{ 's' if attending_count != 1 else '' }} attending, 
-  {{ declined_count }} declined
-</p>
-<form method="get" action="{{ url_for('search_guest') }}">
-    <input type="text" name="q" placeholder="Search guest by name" required>
-    <button type="submit">Search</button>
-</form>
-{% if guests %}
-<table>
-    <tr>
-        <th>Name</th>
-        <th>RSVP</th>
-        <th>Dietary</th>
-        <th>Plus Ones</th>
-        <th>Hotel</th>
-        <th>Kids</th>
-        <th>Phone</th>
-        <th>Actions</th>
-    </tr>
-    {% for guest in guests %}
-    <tr>
-        <td>{{ guest.name }}</td>
-        <td>{{ guest.rsvp }}</td>
-        <td>{{ guest.dietary }}</td>
-        <td>{{ guest.plus_ones }}</td>
-        <td>{{ 'Yes' if guest.hotel else 'No' }}</td>
-        <td>{{ guest.kids }}</td>
-        <td>{{ guest.phone or '' }}</td>
-        <td>
-            <a href="{{ url_for('edit_guest', index=loop.index0) }}">Edit</a> |
-            <a href="{{ url_for('delete_guest', index=loop.index0) }}">Delete</a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-{% else %}
-<p>No guests yet. <a href="{{ url_for('add_guest') }}">Add one</a>.</p>
-{% endif %}
-<a href="{{ url_for('add_guest') }}">Add Guest</a>
-
+<div class="content-box">
+    <h3>📊 Guest Summary</h3>
+    <table>
+      <tr>
+        <td>Total Adults</td>
+        <td>{{ total_adults }}</td>
+      </tr>
+      <tr>
+        <td>Total Kids</td>
+        <td>{{ total_kids }}</td>
+      </tr>
+      <tr>
+        <td><strong>Total Guests</strong></td>
+        <td><strong>{{ grand_total }}</strong></td>
+      </tr>
+    </table>
+</div>
+<div class="content-box">
+    <h2>Guest List</h2>
+    <p>
+      {{ attending_count }} guest{{ 's' if attending_count != 1 else '' }} attending, 
+      {{ declined_count }} declined
+    </p>
+    <form method="get" action="{{ url_for('search_guest') }}">
+        <input type="text" name="q" placeholder="Search guest by name" required>
+        <button type="submit">Search</button>
+    </form>
+    {% if guests %}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>RSVP</th>
+            <th>Dietary</th>
+            <th>Plus Ones</th>
+            <th>Hotel</th>
+            <th>Kids</th>
+            <th>Phone</th>
+            <th>Actions</th>
+        </tr>
+        {% for guest in guests %}
+        <tr>
+            <td>{{ guest.name }}</td>
+            <td>{{ guest.rsvp }}</td>
+            <td>{{ guest.dietary }}</td>
+            <td>{{ guest.plus_ones }}</td>
+            <td>{{ 'Yes' if guest.hotel else 'No' }}</td>
+            <td>{{ guest.kids }}</td>
+            <td>{{ guest.phone or '' }}</td>
+            <td>
+                <a href="{{ url_for('edit_guest', index=loop.index0) }}">Edit</a> |
+                <a href="{{ url_for('delete_guest', index=loop.index0) }}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No guests yet. <a href="{{ url_for('add_guest') }}">Add one</a>.</p>
+    {% endif %}
+    <a href="{{ url_for('add_guest') }}">Add Guest</a>
+</div>
 {% endblock %}

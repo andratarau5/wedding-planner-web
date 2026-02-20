@@ -1,29 +1,31 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<h2>Edit Guest: {{ guest.name }}</h2>
+<div class="content-box">
+    <h2>Edit Guest: {{ guest.name }}</h2>
 
-<form method="post">
-    <label for="rsvp">RSVP:</label>
-    <select name="rsvp">
-        <option value="Yes" {% if guest.rsvp == 'Yes' %}selected{% endif %}>Yes</option>
-        <option value="No" {% if guest.rsvp == 'No' %}selected{% endif %}>No</option>
-        <option value="No response" {% if guest.rsvp == 'No response' %}selected{% endif %}>No response</option>
-    </select><br><br>
-    <label for="dietary">Dietary Restrictions:</label>
-    <input type="text" name="dietary" value="{{ guest.dietary }}"><br><br>
-    <label for="plus_ones">Plus Ones:</label>
-    <input type="number" name="plus_ones" value="{{ guest.plus_ones }}"><br><br>
-    <label for="hotel">Staying in Hotel?</label>
-    <select name="hotel" id="hotel">
-        <option value="yes" {% if guest.hotel %}selected{% endif %}>Yes</option>
-        <option value="no" {% if guest.hotel == false %}selected{% endif %}>No</option>
-    </select><br><br>
-    <label for="kids">Number of Kids:</label>
-    <input type="number" name="kids" id="kids" value="{{ guest.kids or 0 }}" min="0"><br><br>
-    <label for="phone">Phone Number:</label>
-    <input type="text" name="phone" id="phone" value="{{ guest.phone or '' }}"><br><br>
-    <button type="submit">Save</button>
-</form>
-<a href="{{ url_for('index') }}">Cancel</a>
+    <form method="post">
+        <label for="rsvp">RSVP:</label>
+        <select name="rsvp">
+            <option value="Yes" {% if guest.rsvp == 'Yes' %}selected{% endif %}>Yes</option>
+            <option value="No" {% if guest.rsvp == 'No' %}selected{% endif %}>No</option>
+            <option value="No response" {% if guest.rsvp == 'No response' %}selected{% endif %}>No response</option>
+        </select><br><br>
+        <label for="dietary">Dietary Restrictions:</label>
+        <input type="text" name="dietary" value="{{ guest.dietary }}"><br><br>
+        <label for="plus_ones">Plus Ones:</label>
+        <input type="number" name="plus_ones" value="{{ guest.plus_ones }}"><br><br>
+        <label for="hotel">Staying in Hotel?</label>
+        <select name="hotel" id="hotel">
+            <option value="yes" {% if guest.hotel %}selected{% endif %}>Yes</option>
+            <option value="no" {% if guest.hotel == false %}selected{% endif %}>No</option>
+        </select><br><br>
+        <label for="kids">Number of Kids:</label>
+        <input type="number" name="kids" id="kids" value="{{ guest.kids or 0 }}" min="0"><br><br>
+        <label for="phone">Phone Number:</label>
+        <input type="text" name="phone" id="phone" value="{{ guest.phone or '' }}"><br><br>
+        <button type="submit">Save</button>
+    </form>
+    <a href="{{ url_for('index') }}">Cancel</a>
+</div>
 {% endblock %}
