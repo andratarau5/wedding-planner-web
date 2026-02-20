@@ -1,11 +1,6 @@
 [
     {
         "name": "test",
-        "price": 60.0,
-        "description": "test"
-    },
-    {
-        "name": "gdgrrdgd",
         "price": 400.0,
         "description": "dsfsds"
     }
