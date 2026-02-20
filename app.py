@@ -1,22 +1,17 @@
-from flask import Flask, render_template, request, redirect, url_for, make_response, flash
+from flask import Flask, render_template, request, redirect, url_for, flash
 from weasyprint import HTML
 import json
 import os
 from datetime import datetime
-from twilio.rest import Client
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 GUEST_FILE = 'guest_list.json'
 VENUES_FILE = 'venues.json'
 EXPENSES_FILE = 'expenses.json'
-WEDDING_DATE = 'wedding_date.json'
 TASKS_FILE = 'tasks.json'
 TABLES_CONFIG_FILE = 'tables_config.json'
-TWILIO_ACCOUNT_SID = 'AC71b8f58aa5a2f491ec0c9a818d76635d'
-TWILIO_AUTH_TOKEN = '12c427f8434905b2d96d8cc3c7c6e38b'
-TWILIO_PHONE_NUMBER = '+17192249995'
-client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+WEDDING_DATE = datetime(2026, 7, 11)
 
 def load_guests():
     if os.path.exists(GUEST_FILE):
@@ -61,14 +56,16 @@ def save_expenses(expenses):
     with open(EXPENSES_FILE, 'w') as f:
         json.dump(expenses, f, indent=4)
 
-@app.route('/') 
+@app.route('/')
 def home():
-    wedding_date_dict = load_wedding_date()
-    wedding_date_str = wedding_date_dict.get('wedding_date')
-    wedding_date_obj = None
-    if wedding_date_str:
-        wedding_date_obj = datetime.strptime(wedding_date_str, '%Y-%m-%d')
-    return render_template('home.html', wedding_date=wedding_date_obj)
+    today = datetime.now()
+    days_left = (WEDDING_DATE - today).days
+
+    return render_template(
+        'home.html',
+        wedding_date=WEDDING_DATE,
+        days_left=days_left
+    )
 
 @app.route('/guests')
 def index():
@@ -247,33 +244,6 @@ def budget_overview():
                            other_total=other_total,
                            grand_total=grand_total)
 
-
-def load_wedding_date():
-    if os.path.exists(WEDDING_DATE):
-        with open(WEDDING_DATE, 'r') as f:
-            return json.load(f)
-    return {}
-
-
-def save_wedding_date(wedding_date):
-    with open(WEDDING_DATE, 'w') as f:
-        json.dump(wedding_date, f)
-
-
-@app.route('/edit_date', methods=['GET', 'POST'])
-def edit_date():
-    wedding_date_dict = load_wedding_date()
-    current_date = wedding_date_dict.get('wedding_date', '')  # string or empty
-
-    if request.method == 'POST':
-        new_date = request.form.get('wedding_date')  # expects "YYYY-MM-DD"
-        if new_date:
-            wedding_date_dict['wedding_date'] = new_date
-            save_wedding_date(wedding_date_dict)
-        return redirect(url_for('home'))  # redirect to home or wherever you want
-
-    return render_template('edit_date.html', wedding_date=current_date)
-
 def load_tasks():
     if os.path.exists(TASKS_FILE):
         with open(TASKS_FILE, 'r') as f:
@@ -442,69 +412,6 @@ def budget_resolution():
         total_spent=total_spent,
         remaining_balance=remaining_balance
     )
-
-@app.route('/send_sms/<int:index>', methods=['GET', 'POST'])
-def send_sms(index):
-    guests = load_guests()
-    if index < 0 or index >= len(guests):
-        return "Guest not found", 404
-    guest = guests[index]
-    if request.method == 'POST':
-        message_body = request.form['message']
-        to_number = guest.get('phone')
-        if not to_number:
-            flash('Guest has no phone number')
-            return redirect(url_for('index'))
-        try:
-            message = client.messages.create(
-                body=message_body,
-                from_=TWILIO_PHONE_NUMBER,
-                to=to_number
-            )
-            flash(f'SMS sent to {guest["name"]}!')
-        except Exception as e:
-            flash(f'Error sending SMS: {e}')
-        return redirect(url_for('index'))
-    return render_template('send_sms.html', guest=guest)
-
-@app.route('/send_bulk_sms', methods=['GET', 'POST'])
-def send_bulk_sms():
-    guests = load_guests()
-
-    if request.method == 'POST':
-        message = request.form['message']
-        indices = request.form.getlist('guest_indices')
-
-        if not indices:
-            flash("Please select at least one guest.")
-            return redirect(url_for('send_bulk_sms'))
-
-        account_sid = 'your_account_sid'
-        auth_token = 'your_auth_token'
-        twilio_number = 'your_twilio_phone_number'
-        client = Client(account_sid, auth_token)
-
-        sent_count = 0
-
-        for idx in indices:
-            guest = guests[int(idx)]
-            phone = guest.get('phone')
-            if phone:
-                try:
-                    client.messages.create(
-                        body=message,
-                        from_=twilio_number,
-                        to=phone
-                    )
-                    sent_count += 1
-                except Exception as e:
-                    flash(f"Error sending to {guest['name']}: {str(e)}")
-
-        flash(f"Successfully sent SMS to {sent_count} guest(s).")
-        return redirect(url_for('index'))
-
-    return render_template('send_bulk_sms.html', guests=guests)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
