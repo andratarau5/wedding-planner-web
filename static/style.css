@@ -7,7 +7,7 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    color: #ec825e;
+    color: #271001;
     margin: 0;
     padding: 0;
 }
@@ -85,7 +85,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
-    background-color: #f5f9e5;
+    background-color: #ffffff;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -97,12 +97,12 @@ table th, table td {
 }
 
 table th {
-    background-color: #f5f9e5;
+    background-color: #ffffff;
     font-weight: 600;
 }
 
 table tr:nth-child(even) {
-    background-color: #f5f9e5;
+    background-color: #ffffff;
 }
 
 table tr:hover {

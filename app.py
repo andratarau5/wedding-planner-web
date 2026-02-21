@@ -175,9 +175,9 @@ def delete_service(index):
 def add_expense():
     if request.method == 'POST':
         new_expense = {
-            'name': request.form['name'],
+            'service': request.form['service'],
             'price': float(request.form['price']),
-            'description': request.form['description']
+            'paid': float(request.form['paid'])
         }
         expenses = load_expenses()
         expenses.append(new_expense)
@@ -190,9 +190,9 @@ def edit_expense(index):
     expenses = load_expenses()
     if request.method == 'POST':
         expenses[index] = {
-            'name': request.form['name'],
+            'service': request.form['service'],
             'price': float(request.form['price']),
-            'description': request.form['description']
+            'paid': float(request.form['paid'])
         }
         save_expenses(expenses)
         return redirect(url_for('expenses'))
@@ -223,20 +223,20 @@ def search_guest():
 
 @app.route('/budget')
 def budget_overview():
-    services = load_services()
     expenses = load_expenses()
 
-    service_total = sum(float(s.get('total_price', 0)) for s in services if s.get('total_price'))
-    other_total = sum(float(e.get('price', 0)) for e in expenses)
+    total_cost = sum(float(e.get('price', 0)) for e in expenses)
+    total_paid = sum(float(e.get('paid', 0)) for e in expenses)
 
-    grand_total = service_total + other_total
+    for e in expenses:
+        e['remaining'] = float(e.get('price', 0)) - float(e.get('paid', 0))
 
-    return render_template('budget.html',
-                           services=services,
-                           expenses=expenses,
-                           service_total=service_total,
-                           other_total=other_total,
-                           grand_total=grand_total)
+    return render_template(
+        'budget.html',
+        expenses=expenses,
+        total_cost=total_cost,
+        total_paid=total_paid
+    )
 
 def load_tasks():
     if os.path.exists(TASKS_FILE):
@@ -381,31 +381,6 @@ def edit_gifts():
     
     total_gifts = sum(g.get('gift_amount', 0) for g in guests)
     return render_template('edit_gifts.html', guests=guests, total_gifts=total_gifts)
-
-@app.route('/budget_resolution')
-def budget_resolution():
-    guests = load_guests()
-    services = load_services()
-    expenses = load_expenses()
-
-    # Gifts received from guests
-    total_gifts = sum(g.get('gift_amount', 0) for g in guests)
-
-    # Service and other expenses
-    service_total = sum(float(s.get('total_price', 0)) for s in services if s.get('total_price'))
-    other_total = sum(float(e.get('price', 0)) for e in expenses)
-    total_spent = service_total + other_total
-
-    remaining_balance = total_gifts - total_spent
-
-    return render_template(
-        'budget_resolution.html',
-        total_gifts=total_gifts,
-        service_total=service_total,
-        other_total=other_total,
-        total_spent=total_spent,
-        remaining_balance=remaining_balance
-    )
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,7 +1,12 @@
 [
     {
-        "name": "test",
-        "price": 400.0,
-        "description": "dsfsds"
+        "service": "test",
+        "price": 10.0,
+        "paid": 5.0
+    },
+    {
+        "service": "test2",
+        "price": 6000.0,
+        "paid": 500.0
     }
 ]

@@ -4,14 +4,14 @@
 <div class="content-box">
     <h2>Edit Expense: {{ expense.item }}</h2>
     <form method="post">
-        <label for="name">Item:</label>
-        <input type="text" name="name" id="name" value="{{ expense.name }}" required>
+        <label for="service">Item:</label>
+        <input type="text" name="service" id="service" value="{{ expense.service }}" required>
         <br />
         <label for="price">Cost:</label>
         <input type="number" name="price" id="price" value="{{ expense.price }}" required>
         <br />
-        <label for="description">Description:</label>
-        <textarea name="description" id="description" required>{{ expense.description }}</textarea>
+        <label for="paid">Paid:</label>
+        <input type="number" name="paid" id="paid" value="{{ expense.paid }}" required>
         <br />
         <button type="submit">Update Expense</button>
         <a href="{{ url_for('expenses') }}">Cancel</a>

@@ -1,43 +1,66 @@
 {% extends 'layout.html' %}
-
 {% block content %}
 <div class="content-box">
-    <h2>💰 Budget Overview</h2>
+<h2>💰 Budget Overview</h2>
 
-    <h3>🏨 Services </h3>
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Menu Price</th>
-        </tr>
-        {% for s in services %}
-        <tr>
-            <td>{{ s.name }}</td>
-            <td>€{{ s.menu_price }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    <p><strong>Total Services Cost:</strong> €{{ service_total }}</p>
+<!-- ===================== -->
+<!-- TOTAL COST -->
+<!-- ===================== -->
+<h3>Total Services Cost</h3>
+<table>
+    <tr>
+        <th>Total</th>
+    </tr>
+    <tr>
+        <td>${{ total_cost }}</td>
+    </tr>
+</table>
 
-    <h3>📦 Other Expenses</h3>
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Price</th>
-        </tr>
-        {% for e in expenses %}
-        <tr>
-            <td>{{ e.name }}</td>
-            <td>€{{ e.price }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    <p><strong>Total Other Expenses:</strong> €{{ other_total }}</p>
+<!-- ===================== -->
+<!-- TOTAL PAID -->
+<!-- ===================== -->
+<h3>Total Paid</h3>
+<table>
+    <tr>
+        <th>Total</th>
+    </tr>
+    <tr>
+        <td>${{ total_paid }}</td>
+    </tr>
+</table>
 
+<!-- ===================== -->
+<!-- DETAILED TABLE -->
+<!-- ===================== -->
+<h3>Service Payment Status</h3>
 
-    <hr>
-    <h2>💸 Grand Total: €{{ grand_total }}</h2>
+{% if expenses %}
+<table>
+    <tr>
+        <th>Service</th>
+        <th>Cost</th>
+        <th>Paid</th>
+        <th>Remaining</th>
+    </tr>
 
-    <a href="{{ url_for('home') }}">⬅️ Back to Home</a>
+    {% for e in expenses %}
+    <tr>
+        <td>{{ e.service }}</td>
+        <td>${{ e.price }}</td>
+        <td>${{ e.paid }}</td>
+        <td>
+            {% if e.remaining > 0 %}
+                <strong style="color:red">${{ e.remaining }}</strong>
+            {% else %}
+                <span style="color:green">Paid</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No expenses recorded yet.</p>
+{% endif %}
+
 </div>
 {% endblock %}
