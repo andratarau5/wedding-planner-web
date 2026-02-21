@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="content-box">
+  <h2>Add Service</h2>
+  <form method="post">
+      <label for="service">Service:</label>
+      <input type="text" name="service" id="service" required>
+      <br />
+      <label for="name">Name:</label>
+      <input type="text" name="name" id="name" required>
+      <br />
+      <label for="price">Price:</label>
+      <input type="number" name="price" id="price" required>
+      <br />
+      <label for="contact">Contact:</label>
+      <input type="text" name="contact" id="contact" required>
+      <br />
+      <label for="other_info">Other Info:</label>
+      <input type="text" name="other_info" id="other_info">
+    <button type="submit">Add Service</button>
+    <br />
+  </form>
+</div>
+{% endblock %}

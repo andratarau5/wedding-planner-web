@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="content-box">
+    <h2>Edit Service: {{ service.name }}</h2>
+    <form method="post">
+        <label for="service">Service:</label>
+        <input type="text" name="service" id="service" value="{{ service.service }}" required>
+        <br />
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" value="{{ service.name }}" required>
+        <br />
+        <label for="price">Price:</label>
+        <input type="number" name="price" id="price" value="{{ service.total_price }}" required>
+        <br />
+        <label for="contact">Contact:</label>
+        <input type="text" name="contact" id="contact" value="{{ service.contact }}" required>
+        <br />
+        <label for="other_info">Other Info:</label>
+        <input type="text" name="other_info" id="other_info" value="{{ service.other_info }}">
+        <button type="submit">Update Service</button>
+        <br />
+        <a href="{{ url_for('service') }}">Cancel</a>
+    </form>
+</div>
+{% endblock %}

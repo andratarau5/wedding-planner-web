@@ -7,7 +7,7 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 GUEST_FILE = 'guest_list.json'
-VENUES_FILE = 'venues.json'
+SERVICES_FILE = 'services.json'
 EXPENSES_FILE = 'expenses.json'
 TASKS_FILE = 'tasks.json'
 TABLES_CONFIG_FILE = 'tables_config.json'
@@ -22,15 +22,14 @@ def load_guests():
                 return []
     return []
 
-def load_venues():
-    try:
-        with open(VENUES_FILE, 'r') as f:
-            venues = json.load(f)
-            for v in venues:
-                v['date'] = datetime.strptime(v['date'], '%Y-%m-%d')
-            return venues
-    except FileNotFoundError:
-        return []
+def load_services():
+    if os.path.exists(SERVICES_FILE):
+        with open(SERVICES_FILE, 'r') as f:
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return []
+    return []
 
 def load_expenses():
     if os.path.exists(EXPENSES_FILE):
@@ -45,12 +44,9 @@ def save_guests(guests):
     with open(GUEST_FILE, 'w') as f:
         json.dump(guests, f, indent=4)
 
-def save_venues(venues):
-    venues_to_save = [
-        {**v, 'date': v['date'].strftime('%Y-%m-%d')} for v in venues
-    ]
-    with open(VENUES_FILE, 'w') as f:
-        json.dump(venues_to_save, f, indent=2)
+def save_services(services):
+    with open(SERVICES_FILE, 'w') as f:
+        json.dump(services, f, indent=4, default=str)
 
 def save_expenses(expenses):
     with open(EXPENSES_FILE, 'w') as f:
@@ -83,10 +79,10 @@ def index():
                            total_adults=total_adults,
                            grand_total=grand_total)
 
-@app.route('/venues')
-def venue():
-    venues = load_venues()
-    return render_template('venue.html', venues=venues)
+@app.route('/services')
+def services():
+    services = load_services()
+    return render_template('service.html', services=services)
 
 @app.route('/expenses')
 def expenses():
@@ -137,45 +133,43 @@ def delete_guest(index):
         save_guests(guests)
     return redirect(url_for('index'))
 
-@app.route('/venues/add', methods=['GET', 'POST'])
-def add_venue():
+@app.route('/services/add', methods=['GET', 'POST'])
+def add_service():
     if request.method == 'POST':
-        new_venue = {
+        new_service = {
+            'service': request.form['service'],
             'name': request.form['name'],
-            'address': request.form['address'],
-            'date': datetime.strptime(request.form['date'], '%Y-%m-%d'),
-            'capacity': int(request.form['capacity']),
-            'menu_price': float(request.form['menu_price']),
-            'contact': request.form['contact']
+            'price': float(request.form['price']),
+            'contact': request.form['contact'],
+            'other_info': request.form.get('other_info', '')
         }
-        venues = load_venues()
-        venues.append(new_venue)
-        save_venues(venues)
-        return redirect(url_for('venue'))
-    return render_template('add_venue.html')
+        services = load_services()
+        services.append(new_service)
+        save_services(services)
+        return redirect(url_for('services'))
+    return render_template('add_service.html')
 
-@app.route('/venues/edit/<int:index>', methods=['GET', 'POST'])
-def edit_venue(index):
-    venues = load_venues()
+@app.route('/services/edit/<int:index>', methods=['GET', 'POST'])
+def edit_service(index):
+    services = load_services()
     if request.method == 'POST':
-        venues[index] = {
+        services[index] = {
+            'service': request.form['service'],
             'name': request.form['name'],
-            'address': request.form['address'],
-            'date': datetime.strptime(request.form['date'], '%Y-%m-%d'),
-            'capacity': int(request.form['capacity']),
-            'menu_price': float(request.form['menu_price']),
-            'contact': request.form['contact']
+            'price': float(request.form['price']),
+            'contact': request.form['contact'],
+            'other_info': request.form.get('other_info', '')
         }
-        save_venues(venues)
-        return redirect(url_for('venue'))
-    return render_template('edit_venue.html', venue=venues[index])
+        save_services(services)
+        return redirect(url_for('services'))
+    return render_template('edit_service.html', service=services[index])
 
-@app.route('/venues/delete/<int:index>')
-def delete_venue(index):
-    venues = load_venues()
-    venues.pop(index)
-    save_venues(venues)
-    return redirect(url_for('venue'))
+@app.route('/services/delete/<int:index>')
+def delete_service(index):
+    services = load_services()
+    services.pop(index)
+    save_services(services)
+    return redirect(url_for('services'))
 
 @app.route('/expenses/add', methods=['GET', 'POST'])
 def add_expense():
@@ -229,18 +223,18 @@ def search_guest():
 
 @app.route('/budget')
 def budget_overview():
-    venues = load_venues()
+    services = load_services()
     expenses = load_expenses()
 
-    venue_total = sum(float(v.get('menu_price', 0)) for v in venues if v.get('menu_price'))
+    service_total = sum(float(s.get('total_price', 0)) for s in services if s.get('total_price'))
     other_total = sum(float(e.get('price', 0)) for e in expenses)
 
-    grand_total = venue_total + other_total
+    grand_total = service_total + other_total
 
     return render_template('budget.html',
-                           venues=venues,
+                           services=services,
                            expenses=expenses,
-                           venue_total=venue_total,
+                           service_total=service_total,
                            other_total=other_total,
                            grand_total=grand_total)
 
@@ -391,23 +385,23 @@ def edit_gifts():
 @app.route('/budget_resolution')
 def budget_resolution():
     guests = load_guests()
-    venues = load_venues()
+    services = load_services()
     expenses = load_expenses()
 
     # Gifts received from guests
     total_gifts = sum(g.get('gift_amount', 0) for g in guests)
 
-    # Venue and other expenses
-    venue_total = sum(float(v.get('menu_price', 0)) for v in venues if v.get('menu_price'))
+    # Service and other expenses
+    service_total = sum(float(s.get('total_price', 0)) for s in services if s.get('total_price'))
     other_total = sum(float(e.get('price', 0)) for e in expenses)
-    total_spent = venue_total + other_total
+    total_spent = service_total + other_total
 
     remaining_balance = total_gifts - total_spent
 
     return render_template(
         'budget_resolution.html',
         total_gifts=total_gifts,
-        venue_total=venue_total,
+        service_total=service_total,
         other_total=other_total,
         total_spent=total_spent,
         remaining_balance=remaining_balance

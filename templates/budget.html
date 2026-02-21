@@ -4,20 +4,20 @@
 <div class="content-box">
     <h2>💰 Budget Overview</h2>
 
-    <h3>🏨 Venue Expenses</h3>
+    <h3>🏨 Services </h3>
     <table>
         <tr>
             <th>Name</th>
             <th>Menu Price</th>
         </tr>
-        {% for v in venues %}
+        {% for s in services %}
         <tr>
-            <td>{{ v.name }}</td>
-            <td>€{{ v.menu_price }}</td>
+            <td>{{ s.name }}</td>
+            <td>€{{ s.menu_price }}</td>
         </tr>
         {% endfor %}
     </table>
-    <p><strong>Total Venue Cost:</strong> €{{ venue_total }}</p>
+    <p><strong>Total Services Cost:</strong> €{{ service_total }}</p>
 
     <h3>📦 Other Expenses</h3>
     <table>
