@@ -224,18 +224,29 @@ def search_guest():
 @app.route('/budget')
 def budget_overview():
     expenses = load_expenses()
+    guests = load_guests()   # 👈 ADD THIS
 
+    # ---- Expense totals ----
     total_cost = sum(float(e.get('price', 0)) for e in expenses)
     total_paid = sum(float(e.get('paid', 0)) for e in expenses)
 
+    # Remaining per service
     for e in expenses:
         e['remaining'] = float(e.get('price', 0)) - float(e.get('paid', 0))
+
+    # ---- Gifts total ----
+    total_gifts = sum(float(g.get('gift_amount', 0)) for g in guests)
+
+    # ---- Final Budget ----
+    final_budget = total_gifts - total_cost
 
     return render_template(
         'budget.html',
         expenses=expenses,
         total_cost=total_cost,
-        total_paid=total_paid
+        total_paid=total_paid,
+        total_gifts=total_gifts,
+        final_budget=final_budget
     )
 
 def load_tasks():

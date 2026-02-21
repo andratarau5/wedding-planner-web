@@ -61,6 +61,40 @@
 {% else %}
 <p>No expenses recorded yet.</p>
 {% endif %}
+</div>
 
+<!-- ===================== -->
+<!-- Winnings -->
+<!-- ===================== -->
+
+<div class="content-box">
+<h2>💰 Final Wedding Budget Summary</h2>
+
+<table>
+  <tr>
+    <th>Total Gifts Received</th>
+    <td>€{{ total_gifts }}</td>
+  </tr>
+
+  <tr>
+    <th>Total Cost of All Services</th>
+    <td>€{{ total_services_cost }}</td>
+  </tr>
+
+  <tr>
+    <th>Winnings</th>
+    <td>
+      {% if final_budget >= 0 %}
+        <span style="color: green; font-weight: bold;">
+          €{{ final_budget }} surplus
+        </span>
+      {% else %}
+        <span style="color: red; font-weight: bold;">
+          €{{ final_budget }} deficit
+        </span>
+      {% endif %}
+    </td>
+  </tr>
+</table>
 </div>
 {% endblock %}
