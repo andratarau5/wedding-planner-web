@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, make_response
 from weasyprint import HTML
 import json
 import os
@@ -6,63 +6,67 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+
+# JSON file paths
 GUEST_FILE = 'guest_list.json'
 SERVICES_FILE = 'services.json'
 EXPENSES_FILE = 'expenses.json'
 TASKS_FILE = 'tasks.json'
 TABLES_CONFIG_FILE = 'tables_config.json'
+
+# Wedding date
 WEDDING_DATE = datetime(2026, 7, 11)
 
-def load_guests():
-    if os.path.exists(GUEST_FILE):
-        with open(GUEST_FILE, 'r') as f:
+# -------------------------------
+# Load / Save functions
+# -------------------------------
+def load_json(file):
+    if os.path.exists(file):
+        with open(file, 'r') as f:
             try:
                 return json.load(f)
             except json.JSONDecodeError:
                 return []
     return []
 
-def load_services():
-    if os.path.exists(SERVICES_FILE):
-        with open(SERVICES_FILE, 'r') as f:
-            try:
-                return json.load(f)
-            except json.JSONDecodeError:
-                return []
-    return []
+def save_json(file, data):
+    with open(file, 'w') as f:
+        json.dump(data, f, indent=4, default=str)
 
-def load_expenses():
-    if os.path.exists(EXPENSES_FILE):
-        with open(EXPENSES_FILE, 'r') as f:
-            try:
-                return json.load(f)
-            except json.JSONDecodeError:
-                return []
-    return []
+def load_guests(): return load_json(GUEST_FILE)
+def save_guests(guests): save_json(GUEST_FILE, guests)
 
-def save_guests(guests):
-    with open(GUEST_FILE, 'w') as f:
-        json.dump(guests, f, indent=4)
+def load_services(): return load_json(SERVICES_FILE)
+def save_services(services): save_json(SERVICES_FILE, services)
 
-def save_services(services):
-    with open(SERVICES_FILE, 'w') as f:
-        json.dump(services, f, indent=4, default=str)
+def load_expenses(): return load_json(EXPENSES_FILE)
+def save_expenses(expenses): save_json(EXPENSES_FILE, expenses)
 
-def save_expenses(expenses):
-    with open(EXPENSES_FILE, 'w') as f:
-        json.dump(expenses, f, indent=4)
+def load_tasks(): return load_json(TASKS_FILE)
+def save_tasks(tasks): save_json(TASKS_FILE, tasks)
 
+def load_table_config():
+    if os.path.exists(TABLES_CONFIG_FILE):
+        with open(TABLES_CONFIG_FILE) as f:
+            return json.load(f)
+    return {"num_tables": 0, "seats_per_table": 0}
+
+def save_table_config(config):
+    with open(TABLES_CONFIG_FILE, 'w') as f:
+        json.dump(config, f)
+
+# -------------------------------
+# Home
+# -------------------------------
 @app.route('/')
 def home():
     today = datetime.now()
     days_left = (WEDDING_DATE - today).days
+    return render_template('home.html', wedding_date=WEDDING_DATE, days_left=days_left)
 
-    return render_template(
-        'home.html',
-        wedding_date=WEDDING_DATE,
-        days_left=days_left
-    )
-
+# -------------------------------
+# Guests
+# -------------------------------
 @app.route('/guests')
 def index():
     guests = load_guests()
@@ -79,24 +83,18 @@ def index():
                            total_adults=total_adults,
                            grand_total=grand_total)
 
-@app.route('/services')
-def services():
-    services = load_services()
-    return render_template('service.html', services=services)
-
-@app.route('/expenses')
-def expenses():
-    expenses = load_expenses()
-    return render_template('expenses.html', expenses=expenses)
-
 @app.route('/add', methods=['GET', 'POST'])
 def add_guest():
     if request.method == 'POST':
         new_guest = {
             'name': request.form['name'],
-            'rsvp': 'No Response',   # default state
-            'dietary': '',           # default empty
-            'plus_ones': 0
+            'rsvp': 'No Response',
+            'dietary': '',
+            'plus_ones': 0,
+            'hotel': False,
+            'kids': 0,
+            'phone': '',
+            'gift_amount': 0
         }
         guests = load_guests()
         guests.append(new_guest)
@@ -109,21 +107,17 @@ def edit_guest(index):
     guests = load_guests()
     if index < 0 or index >= len(guests):
         return "Guest not found", 404
-
     guest = guests[index]
-
     if request.method == 'POST':
         guest['rsvp'] = request.form['rsvp']
         guest['dietary'] = request.form['dietary']
-        guest['plus_ones'] = int(request.form['plus_ones'])
+        guest['plus_ones'] = int(request.form.get('plus_ones', 0))
         guest['hotel'] = request.form.get('hotel') == 'yes'
         guest['kids'] = int(request.form.get('kids', 0))
         guest['phone'] = request.form.get('phone', '')
         save_guests(guests)
         return redirect(url_for('index'))
-
     return render_template('edit_guest.html', guest=guest, index=index)
-
 
 @app.route('/delete/<int:index>')
 def delete_guest(index):
@@ -132,6 +126,21 @@ def delete_guest(index):
         guests.pop(index)
         save_guests(guests)
     return redirect(url_for('index'))
+
+@app.route('/search')
+def search_guest():
+    query = request.args.get('q', '').strip().lower()
+    guests = load_guests()
+    filtered = [g for g in guests if query in g['name'].lower()] if query else []
+    return render_template('search_results.html', guests=filtered, query=query)
+
+# -------------------------------
+# Services
+# -------------------------------
+@app.route('/services')
+def services():
+    services = load_services()
+    return render_template('service.html', services=services)
 
 @app.route('/services/add', methods=['GET', 'POST'])
 def add_service():
@@ -171,6 +180,14 @@ def delete_service(index):
     save_services(services)
     return redirect(url_for('services'))
 
+# -------------------------------
+# Expenses
+# -------------------------------
+@app.route('/expenses')
+def expenses():
+    expenses = load_expenses()
+    return render_template('expenses.html', expenses=expenses)
+
 @app.route('/expenses/add', methods=['GET', 'POST'])
 def add_expense():
     if request.method == 'POST':
@@ -206,70 +223,40 @@ def delete_expense(index):
         save_expenses(expenses)
     return redirect(url_for('expenses'))
 
-@app.route('/search')
-def search_guest():
-    query = request.args.get('q', '').strip().lower()
-    guests = load_guests()
-
-    if query:
-        filtered_guests = [
-            guest for guest in guests
-            if query in guest['name'].lower()
-        ]
-    else:
-        filtered_guests = []
-
-    return render_template('search_results.html', guests=filtered_guests, query=query)
-
+# -------------------------------
+# Budget
+# -------------------------------
 @app.route('/budget')
 def budget_overview():
     expenses = load_expenses()
-    guests = load_guests()   # 👈 ADD THIS
+    guests = load_guests()
 
-    # ---- Expense totals ----
     total_cost = sum(float(e.get('price', 0)) for e in expenses)
     total_paid = sum(float(e.get('paid', 0)) for e in expenses)
-
-    # Remaining per service
     for e in expenses:
         e['remaining'] = float(e.get('price', 0)) - float(e.get('paid', 0))
 
-    # ---- Gifts total ----
     total_gifts = sum(float(g.get('gift_amount', 0)) for g in guests)
-
-    # ---- Final Budget ----
     final_budget = total_gifts - total_cost
 
-    return render_template(
-        'budget.html',
-        expenses=expenses,
-        total_cost=total_cost,
-        total_paid=total_paid,
-        total_gifts=total_gifts,
-        final_budget=final_budget
-    )
+    return render_template('budget.html',
+                           expenses=expenses,
+                           total_cost=total_cost,
+                           total_paid=total_paid,
+                           total_gifts=total_gifts,
+                           final_budget=final_budget)
 
-def load_tasks():
-    if os.path.exists(TASKS_FILE):
-        with open(TASKS_FILE, 'r') as f:
-            try:
-                return json.load(f)
-            except json.JSONDecodeError:
-                return []
-    return []
-
-def save_tasks(tasks):
-    with open(TASKS_FILE, 'w') as f:
-        json.dump(tasks, f)
-
+# -------------------------------
+# Tasks
+# -------------------------------
 @app.route('/tasks', methods=['GET', 'POST'])
-def tasks():
+def tasks_view():
     tasks = load_tasks()
     if request.method == 'POST':
         new_task = request.form['title']
         tasks.append({'title': new_task, 'completed': False})
         save_tasks(tasks)
-        return redirect(url_for('tasks'))
+        return redirect(url_for('tasks_view'))
 
     total = len(tasks)
     completed = sum(1 for t in tasks if t['completed'])
@@ -277,14 +264,13 @@ def tasks():
 
     return render_template('tasks.html', tasks=tasks, total=total, completed=completed, percent=percent)
 
-
 @app.route('/tasks/toggle/<int:index>', methods=['POST'])
 def toggle_task(index):
     tasks = load_tasks()
     if 0 <= index < len(tasks):
         tasks[index]['completed'] = not tasks[index]['completed']
         save_tasks(tasks)
-    return redirect(url_for('tasks'))
+    return redirect(url_for('tasks_view'))
 
 @app.route('/tasks/delete/<int:index>', methods=['POST'])
 def delete_task(index):
@@ -292,18 +278,11 @@ def delete_task(index):
     if 0 <= index < len(tasks):
         tasks.pop(index)
         save_tasks(tasks)
-    return redirect(url_for('tasks'))
+    return redirect(url_for('tasks_view'))
 
-def load_table_config():
-    if os.path.exists(TABLES_CONFIG_FILE):
-        with open(TABLES_CONFIG_FILE) as f:
-            return json.load(f)
-    return {"num_tables": 0, "seats_per_table": 0}
-
-def save_table_config(config):
-    with open(TABLES_CONFIG_FILE, 'w') as f:
-        json.dump(config, f)
-
+# -------------------------------
+# Table configuration & assignments
+# -------------------------------
 @app.route('/configure_tables', methods=['GET', 'POST'])
 def configure_tables():
     config = load_table_config()
@@ -319,48 +298,34 @@ def tables_view():
     config = load_table_config()
     guests = load_guests()
     num_tables = config.get("num_tables", 0)
-
-    # Prepare tables as dict {table_num: [guest_names]}
     tables = {i: [] for i in range(1, num_tables + 1)}
-
     for guest in guests:
         table_num = guest.get('table')
         if table_num and table_num in tables:
             tables[table_num].append(guest['name'])
-
     return render_template('tables_view.html', tables=tables)
-
 
 @app.route('/assign_tables', methods=['GET', 'POST'])
 def assign_tables():
     guests = load_guests()
     config = load_table_config()
     num_tables = config.get('num_tables', 0)
-
     if request.method == 'POST':
-        # Loop through guests and update table assignment from form data
         for i, guest in enumerate(guests):
             table_num_str = request.form.get(f'table_{i}', '')
-            if table_num_str.isdigit():
-                guest['table'] = int(table_num_str)
-            else:
-                guest['table'] = None  # Or 0 or null for no assignment
-
+            guest['table'] = int(table_num_str) if table_num_str.isdigit() else None
         save_guests(guests)
         return redirect(url_for('tables_view'))
-
     return render_template('assign_tables.html', guests=guests, num_tables=num_tables)
 
 @app.route('/export_tables_pdf')
 def export_tables_pdf():
     config = load_table_config()
     guests = load_guests()
-
     num_tables = config.get("num_tables", 0)
     seats_per_table = config.get("seats_per_table", 0)
     tables = [[] for _ in range(num_tables)]
     guest_index = 0
-
     for guest in guests:
         table_number = guest_index // seats_per_table
         if table_number < num_tables:
@@ -368,15 +333,16 @@ def export_tables_pdf():
             guest_index += 1
         else:
             break
-
     rendered = render_template('tables_view_pdf.html', tables=tables, config=config)
     pdf = HTML(string=rendered).write_pdf()
-
     response = make_response(pdf)
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = 'inline; filename=tables.pdf'
     return response
 
+# -------------------------------
+# Guest gift tracker
+# -------------------------------
 @app.route('/edit_gifts', methods=['GET', 'POST'])
 def edit_gifts():
     guests = load_guests()
@@ -393,5 +359,8 @@ def edit_gifts():
     total_gifts = sum(g.get('gift_amount', 0) for g in guests)
     return render_template('edit_gifts.html', guests=guests, total_gifts=total_gifts)
 
+# -------------------------------
+# Run the app
+# -------------------------------
 if __name__ == '__main__':
     app.run(debug=True)
